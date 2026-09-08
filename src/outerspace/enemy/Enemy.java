@@ -4,62 +4,47 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
+import outerspace.combat.Bullet;
+import outerspace.player.Player;
 import outerspace.util.Constants;
 
 /**
- * A basic descending enemy. Spawns above the top edge at a given X and
- * moves downward each update until it leaves the bottom of the screen.
- * Flipped vertically so it faces the player, and can fire on a cooldown.
+ * Base for all enemies. Owns position, size, sprite and rendering. Subclasses
+ * define movement in {@link #update(Player)} and firing in
+ * {@link #fire(Player, long)}. The sprite is drawn flipped vertically so every
+ * enemy faces the player at the bottom of the screen.
  */
-public class Enemy {
+public abstract class Enemy {
 
-    private int x;
-    private int y;
-    private final int displayWidth;
-    private final int displayHeight;
-    private final BufferedImage image;
-    private long lastShotTime;
+    protected int x;
+    protected int y;
+    protected final int displayWidth;
+    protected final int displayHeight;
+    protected final BufferedImage image;
 
-    public Enemy(int x, BufferedImage image) {
+    protected Enemy(int x, int y, BufferedImage image, int displayWidth) {
         this.image = image;
         double aspect = (double) image.getHeight() / image.getWidth();
-        this.displayWidth = Constants.ENEMY_DISPLAY_WIDTH;
-        this.displayHeight = (int) (Constants.ENEMY_DISPLAY_WIDTH * aspect);
-        this.x = clampX(x);
-        this.y = -displayHeight;
+        this.displayWidth = displayWidth;
+        this.displayHeight = (int) (displayWidth * aspect);
+        this.x = x;
+        this.y = y;
     }
 
-    private int clampX(int value) {
-        if (value < 0) {
-            return 0;
-        }
-        if (value + displayWidth > Constants.SCREEN_WIDTH) {
-            return Constants.SCREEN_WIDTH - displayWidth;
-        }
-        return value;
-    }
+    /** Per-frame movement. Subclasses decide how to chase or patrol. */
+    public abstract void update(Player player);
 
-    public void update() {
-        y += Constants.ENEMY_SPEED;
+    /**
+     * Returns a bullet to spawn this frame, or {@code null} when the enemy does
+     * not fire or is on cooldown. The base class returns {@code null}; only
+     * shooting enemies override this.
+     */
+    public Bullet fire(Player player, long now) {
+        return null;
     }
 
     public boolean isOffScreen() {
         return y > Constants.SCREEN_HEIGHT;
-    }
-
-    /**
-     * Returns true (and marks the cooldown) when the enemy may fire this
-     * tick. Only fires once the enemy is actually on screen.
-     */
-    public boolean canFire(long now) {
-        if (y < 0) {
-            return false;
-        }
-        if (now - lastShotTime < Constants.ENEMY_FIRE_INTERVAL_MS) {
-            return false;
-        }
-        lastShotTime = now;
-        return true;
     }
 
     public int getCenterX() {

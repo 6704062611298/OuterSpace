@@ -17,9 +17,10 @@ public class Game extends JFrame {
 
         BufferedImage playerImg = loadImage(Constants.PLAYER_IMAGE);
         BufferedImage enemyImg = loadImage(Constants.ENEMY_IMAGE);
+        BufferedImage rammingImg = loadImage(Constants.RAMMING_IMAGE);
         BufferedImage bulletImg = loadImage(Constants.BULLET_IMAGE);
 
-        GamePanel panel = new GamePanel(playerImg, enemyImg, bulletImg);
+        GamePanel panel = new GamePanel(playerImg, enemyImg, rammingImg, bulletImg);
         add(panel);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

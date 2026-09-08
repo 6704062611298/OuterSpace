@@ -21,6 +21,7 @@ import outerspace.combat.Bullet;
 import outerspace.combat.CollisionSystem;
 import outerspace.enemy.Enemy;
 import outerspace.player.Player;
+import outerspace.spawn.WaveSpawner;
 import outerspace.util.Constants;
 
 /**
@@ -34,19 +35,18 @@ public class GamePanel extends JPanel {
     private final List<Enemy> enemies = new ArrayList<>();
     private final List<Bullet> bullets = new ArrayList<>();
     private final List<Bullet> enemyBullets = new ArrayList<>();
-    private final BufferedImage enemyImage;
     private final BufferedImage bulletImage;
+    private final WaveSpawner spawner;
     private final Set<Integer> keys = new HashSet<>();
 
     private GameState state;
     private int score;
     private long lastShotTime;
-    private long lastSpawnTime;
 
-    public GamePanel(BufferedImage playerImg, BufferedImage enemyImg, BufferedImage bulletImg) {
+    public GamePanel(BufferedImage playerImg, BufferedImage enemyImg, BufferedImage rammingImg, BufferedImage bulletImg) {
         this.player = new Player(playerImg);
-        this.enemyImage = enemyImg;
         this.bulletImage = bulletImg;
+        this.spawner = new WaveSpawner(enemyImg, rammingImg, bulletImg);
         this.state = GameState.PLAYING;
 
         setPreferredSize(new Dimension(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
@@ -125,35 +125,22 @@ public class GamePanel extends JPanel {
             }
         }
 
-        // --- Enemy spawning ---
-        if (now - lastSpawnTime >= Constants.ENEMY_SPAWN_INTERVAL_MS) {
-            int x = (int) (Math.random() * (Constants.SCREEN_WIDTH - Constants.ENEMY_DISPLAY_WIDTH));
-            enemies.add(new Enemy(x, enemyImage));
-            lastSpawnTime = now;
-        }
+        // --- Wave spawning (formations, not random scatter) ---
+        spawner.update(now, enemies, player);
 
         // --- Enemies ---
         Iterator<Enemy> enemyIt = enemies.iterator();
         while (enemyIt.hasNext()) {
             Enemy enemy = enemyIt.next();
-            enemy.update();
+            enemy.update(player);
             if (enemy.isOffScreen()) {
                 enemyIt.remove();
                 continue;
             }
-            // Enemy fires at the player on its cooldown.
-            if (enemy.canFire(now)) {
-                int sx = enemy.getCenterX();
-                int sy = enemy.getBottomY();
-                double ddx = player.getCenterX() - sx;
-                double ddy = player.getCenterY() - sy;
-                double dist = Math.hypot(ddx, ddy);
-                if (dist == 0) {
-                    dist = 1;
-                }
-                int vx = (int) Math.round((ddx / dist) * Constants.ENEMY_BULLET_SPEED);
-                int vy = (int) Math.round((ddy / dist) * Constants.ENEMY_BULLET_SPEED);
-                enemyBullets.add(new Bullet(sx, sy, bulletImage, vx, vy));
+            // Shooting enemies fire; rammers return null.
+            Bullet fired = enemy.fire(player, now);
+            if (fired != null) {
+                enemyBullets.add(fired);
             }
         }
 
@@ -186,7 +173,7 @@ public class GamePanel extends JPanel {
         enemyBullets.clear();
         score = 0;
         lastShotTime = 0;
-        lastSpawnTime = 0;
+        spawner.reset();
         state = GameState.PLAYING;
     }
 
