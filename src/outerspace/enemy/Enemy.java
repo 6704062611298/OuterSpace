@@ -9,6 +9,7 @@ import outerspace.util.Constants;
 /**
  * A basic descending enemy. Spawns above the top edge at a given X and
  * moves downward each update until it leaves the bottom of the screen.
+ * Flipped vertically so it faces the player, and can fire on a cooldown.
  */
 public class Enemy {
 
@@ -17,6 +18,7 @@ public class Enemy {
     private final int displayWidth;
     private final int displayHeight;
     private final BufferedImage image;
+    private long lastShotTime;
 
     public Enemy(int x, BufferedImage image) {
         this.image = image;
@@ -45,8 +47,35 @@ public class Enemy {
         return y > Constants.SCREEN_HEIGHT;
     }
 
+    /**
+     * Returns true (and marks the cooldown) when the enemy may fire this
+     * tick. Only fires once the enemy is actually on screen.
+     */
+    public boolean canFire(long now) {
+        if (y < 0) {
+            return false;
+        }
+        if (now - lastShotTime < Constants.ENEMY_FIRE_INTERVAL_MS) {
+            return false;
+        }
+        lastShotTime = now;
+        return true;
+    }
+
+    public int getCenterX() {
+        return x + displayWidth / 2;
+    }
+
+    public int getBottomY() {
+        return y + displayHeight;
+    }
+
     public void draw(Graphics2D g) {
-        g.drawImage(image, x, y, displayWidth, displayHeight, null);
+        // Flip vertically so the sprite's nose points down toward the player.
+        g.drawImage(image,
+                x, y + displayHeight, x + displayWidth, y,
+                0, 0, image.getWidth(), image.getHeight(),
+                null);
     }
 
     public Rectangle getBounds() {

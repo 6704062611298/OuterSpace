@@ -33,6 +33,7 @@ public class GamePanel extends JPanel {
     private final Player player;
     private final List<Enemy> enemies = new ArrayList<>();
     private final List<Bullet> bullets = new ArrayList<>();
+    private final List<Bullet> enemyBullets = new ArrayList<>();
     private final BufferedImage enemyImage;
     private final BufferedImage bulletImage;
     private final Set<Integer> keys = new HashSet<>();
@@ -138,12 +139,38 @@ public class GamePanel extends JPanel {
             enemy.update();
             if (enemy.isOffScreen()) {
                 enemyIt.remove();
+                continue;
+            }
+            // Enemy fires at the player on its cooldown.
+            if (enemy.canFire(now)) {
+                int sx = enemy.getCenterX();
+                int sy = enemy.getBottomY();
+                double ddx = player.getCenterX() - sx;
+                double ddy = player.getCenterY() - sy;
+                double dist = Math.hypot(ddx, ddy);
+                if (dist == 0) {
+                    dist = 1;
+                }
+                int vx = (int) Math.round((ddx / dist) * Constants.ENEMY_BULLET_SPEED);
+                int vy = (int) Math.round((ddy / dist) * Constants.ENEMY_BULLET_SPEED);
+                enemyBullets.add(new Bullet(sx, sy, bulletImage, vx, vy));
+            }
+        }
+
+        // --- Enemy bullets ---
+        Iterator<Bullet> enemyBulletIt = enemyBullets.iterator();
+        while (enemyBulletIt.hasNext()) {
+            Bullet bullet = enemyBulletIt.next();
+            bullet.update();
+            if (bullet.isOffScreen()) {
+                enemyBulletIt.remove();
             }
         }
 
         // --- Collisions ---
         score += CollisionSystem.handleBulletEnemy(bullets, enemies);
         CollisionSystem.handleEnemyPlayer(enemies, player);
+        CollisionSystem.handleEnemyBulletPlayer(enemyBullets, player);
 
         // --- Death check ---
         if (player.isDead()) {
@@ -156,6 +183,7 @@ public class GamePanel extends JPanel {
         player.reset();
         enemies.clear();
         bullets.clear();
+        enemyBullets.clear();
         score = 0;
         lastShotTime = 0;
         lastSpawnTime = 0;
@@ -173,6 +201,9 @@ public class GamePanel extends JPanel {
 
         // Entities
         for (Bullet bullet : bullets) {
+            bullet.draw(g2);
+        }
+        for (Bullet bullet : enemyBullets) {
             bullet.draw(g2);
         }
         for (Enemy enemy : enemies) {

@@ -60,4 +60,21 @@ public final class CollisionSystem {
             }
         }
     }
+
+    /**
+     * Resolves enemy bullets vs the player. On hit the bullet is removed and
+     * the player takes {@link Constants#ENEMY_BULLET_DAMAGE}.
+     */
+    public static void handleEnemyBulletPlayer(List<Bullet> enemyBullets, Player player) {
+        Rectangle playerBounds = player.getBounds();
+
+        Iterator<Bullet> it = enemyBullets.iterator();
+        while (it.hasNext()) {
+            Bullet bullet = it.next();
+            if (playerBounds.intersects(bullet.getBounds())) {
+                player.takeDamage(Constants.ENEMY_BULLET_DAMAGE);
+                it.remove();
+            }
+        }
+    }
 }

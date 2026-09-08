@@ -29,13 +29,16 @@ public final class Constants {
     public static final int ENEMY_DAMAGE = 25;
     public static final int ENEMY_SPAWN_INTERVAL_MS = 1000;
     public static final int ENEMY_DISPLAY_WIDTH = 55;
+    public static final int ENEMY_BULLET_SPEED = 4;
+    public static final int ENEMY_BULLET_DAMAGE = 10;
+    public static final int ENEMY_FIRE_INTERVAL_MS = 1500;
 
     // Score
     public static final int SCORE_PER_ENEMY = 100;
 
     // Assets (relative to the project working directory)
     public static final String ASSET_DIR = "Asset";
-    public static final String PLAYER_IMAGE = ASSET_DIR + "/PlayerPlane.png";
-    public static final String ENEMY_IMAGE = ASSET_DIR + "/Enemy.png";
+    public static final String PLAYER_IMAGE = ASSET_DIR + "/PlayerPlaneNormal_1.png";
+    public static final String ENEMY_IMAGE = ASSET_DIR + "/Enemy_1.png";
     public static final String BULLET_IMAGE = ASSET_DIR + "/Bullet.png";
 }

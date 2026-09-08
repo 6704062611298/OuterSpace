@@ -71,6 +71,10 @@ public class Player {
         return x + displayWidth / 2;
     }
 
+    public int getCenterY() {
+        return y + displayHeight / 2;
+    }
+
     public int getTopY() {
         return y;
     }
