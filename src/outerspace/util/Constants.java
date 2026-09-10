@@ -50,4 +50,5 @@ public final class Constants {
     public static final String ENEMY_IMAGE = ASSET_DIR + "/Enemy_1.png";
     public static final String RAMMING_IMAGE = ASSET_DIR + "/Enemy_1.png";
     public static final String BULLET_IMAGE = ASSET_DIR + "/Bullet.png";
+    // public static final String BULLET_IMAGE = ASSET_DIR + "/Bullet.png";
 }
