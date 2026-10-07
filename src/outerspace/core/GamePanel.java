@@ -7,6 +7,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,6 +24,7 @@ import outerspace.combat.CollisionSystem;
 import outerspace.enemy.Enemy;
 import outerspace.player.Player;
 import outerspace.spawn.WaveSpawner;
+import outerspace.ui.MainMenu;
 import outerspace.util.Constants;
 
 /**
@@ -36,18 +39,24 @@ public class GamePanel extends JPanel {
     private final List<Bullet> bullets = new ArrayList<>();
     private final List<Bullet> enemyBullets = new ArrayList<>();
     private final BufferedImage bulletImage;
+    private final ParallaxBackground background;
     private final WaveSpawner spawner;
     private final Set<Integer> keys = new HashSet<>();
+    private final MainMenu menu = new MainMenu();
 
     private GameState state;
     private int score;
+    /** Score of the last finished run, shown on the menu; -1 before the first run. */
+    private int lastScore = -1;
     private long lastShotTime;
 
-    public GamePanel(BufferedImage playerImg, BufferedImage enemyImg, BufferedImage rammingImg, BufferedImage bulletImg) {
+    public GamePanel(BufferedImage playerImg, BufferedImage enemyImg, BufferedImage rammingImg,
+            BufferedImage bulletImg, BufferedImage backgroundImg) {
         this.player = new Player(playerImg);
         this.bulletImage = bulletImg;
+        this.background = new ParallaxBackground(backgroundImg);
         this.spawner = new WaveSpawner(enemyImg, rammingImg, bulletImg);
-        this.state = GameState.PLAYING;
+        this.state = GameState.MENU;
 
         setPreferredSize(new Dimension(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
         setFocusable(true);
@@ -70,17 +79,60 @@ public class GamePanel extends JPanel {
             }
         });
 
+        MouseAdapter mouse = new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (state == GameState.MENU) {
+                    menu.hover(e.getX(), e.getY());
+                }
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (state == GameState.MENU && menu.hover(e.getX(), e.getY()) != -1) {
+                    selectMenuOption();
+                }
+            }
+        };
+        addMouseListener(mouse);
+        addMouseMotionListener(mouse);
+
         Timer loop = new Timer(1000 / Constants.FPS, e -> tick());
         loop.start();
     }
 
     private void handleActionKey(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+        int code = e.getKeyCode();
+        if (code == KeyEvent.VK_ESCAPE) {
             System.exit(0);
         }
-        if (state == GameState.GAME_OVER && e.getKeyCode() == KeyEvent.VK_R) {
-            restart();
+        if (state != GameState.MENU) {
+            return;
         }
+
+        if (code == KeyEvent.VK_W || code == KeyEvent.VK_UP) {
+            menu.moveUp();
+        } else if (code == KeyEvent.VK_S || code == KeyEvent.VK_DOWN) {
+            menu.moveDown();
+        } else if (code == KeyEvent.VK_ENTER || code == KeyEvent.VK_SPACE) {
+            selectMenuOption();
+        }
+    }
+
+    private void selectMenuOption() {
+        if (menu.getSelected() == MainMenu.START) {
+            restart();
+        } else {
+            System.exit(0);
+        }
+    }
+
+    /** Called when the player dies: show the main menu with the run's score. */
+    private void goToMenu() {
+        lastScore = score;
+        keys.clear();
+        menu.reset();
+        state = GameState.MENU;
     }
 
     private void tick() {
@@ -91,6 +143,8 @@ public class GamePanel extends JPanel {
     }
 
     private void update() {
+        background.update();
+
         // --- Input -> movement ---
         int dx = 0;
         int dy = 0;
@@ -161,7 +215,7 @@ public class GamePanel extends JPanel {
 
         // --- Death check ---
         if (player.isDead()) {
-            state = GameState.GAME_OVER;
+            goToMenu();
         }
     }
 
@@ -174,6 +228,7 @@ public class GamePanel extends JPanel {
         score = 0;
         lastShotTime = 0;
         spawner.reset();
+        keys.clear();
         state = GameState.PLAYING;
     }
 
@@ -182,9 +237,13 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
+        if (state == GameState.MENU) {
+            menu.draw(g2, lastScore);
+            return;
+        }
+
         // Background
-        g2.setColor(Color.BLACK);
-        g2.fillRect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        background.draw(g2);
 
         // Entities
         for (Bullet bullet : bullets) {
@@ -203,25 +262,5 @@ public class GamePanel extends JPanel {
         g2.setFont(new Font("SansSerif", Font.BOLD, 18));
         g2.drawString("HP: " + player.getHp(), 10, 25);
         g2.drawString("Score: " + score, 10, 50);
-
-        // Game Over overlay
-        if (state == GameState.GAME_OVER) {
-            g2.setColor(new Color(0, 0, 0, 180));
-            g2.fillRect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
-
-            g2.setColor(Color.RED);
-            g2.setFont(new Font("SansSerif", Font.BOLD, 48));
-            drawCentered(g2, "GAME OVER", Constants.SCREEN_HEIGHT / 2 - 40);
-
-            g2.setColor(Color.WHITE);
-            g2.setFont(new Font("SansSerif", Font.BOLD, 24));
-            drawCentered(g2, "Score: " + score, Constants.SCREEN_HEIGHT / 2 + 10);
-            drawCentered(g2, "Press R to Restart", Constants.SCREEN_HEIGHT / 2 + 45);
-        }
-    }
-
-    private void drawCentered(Graphics2D g2, String text, int y) {
-        int textWidth = g2.getFontMetrics().stringWidth(text);
-        g2.drawString(text, (Constants.SCREEN_WIDTH - textWidth) / 2, y);
     }
 }

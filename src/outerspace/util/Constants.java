@@ -10,9 +10,17 @@ public final class Constants {
     }
 
     // Screen
-    public static final int SCREEN_WIDTH = 800;
-    public static final int SCREEN_HEIGHT = 600;
+    public static final int SCREEN_WIDTH = 450;   // 9:16 portrait
+    public static final int SCREEN_HEIGHT = 800;
     public static final int FPS = 60;
+
+    // Background parallax (scroll speed in pixels per frame, slowest = farthest)
+    public static final double BG_SCROLL_SPEED = 0.5;
+    public static final double BG_SEAM_BLEND = 0.25;  // fraction of image height crossfaded to hide the loop seam
+    public static final double FAR_STAR_SPEED = 1.5;
+    public static final double NEAR_STAR_SPEED = 3.5;
+    public static final int FAR_STAR_COUNT = 40;
+    public static final int NEAR_STAR_COUNT = 15;
 
     // Player
     public static final int PLAYER_SPEED = 5;
@@ -51,4 +59,5 @@ public final class Constants {
     public static final String RAMMING_IMAGE = ASSET_DIR + "/Enemy_1.png";
     public static final String BULLET_IMAGE = ASSET_DIR + "/Bullet.png";
     // public static final String BULLET_IMAGE = ASSET_DIR + "/Bullet.png";
+    public static final String BACKGROUND_IMAGE = "assets/EarthOrbit.jpg";
 }
