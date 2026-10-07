@@ -7,7 +7,7 @@ import javax.swing.JFrame;
 import outerspace.util.Constants;
 
 /**
- * The game window. Loads the gameplay assets and background, builds the {@link GamePanel},
+ * The game window. Loads the gameplay sprites, builds the {@link GamePanel},
  * and sizes/positions the frame. No gameplay logic lives here.
  */
 public class Game extends JFrame {
@@ -19,9 +19,9 @@ public class Game extends JFrame {
         BufferedImage enemyImg = loadImage(Constants.ENEMY_IMAGE);
         BufferedImage rammingImg = loadImage(Constants.RAMMING_IMAGE);
         BufferedImage bulletImg = loadImage(Constants.BULLET_IMAGE);
-        BufferedImage backgroundImg = loadImage(Constants.BACKGROUND_IMAGE);
+        BufferedImage bossImg = loadImage(Constants.BOSS_IMAGE);
 
-        GamePanel panel = new GamePanel(playerImg, enemyImg, rammingImg, bulletImg, backgroundImg);
+        GamePanel panel = new GamePanel(playerImg, enemyImg, rammingImg, bulletImg, bossImg);
         add(panel);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -33,7 +33,8 @@ public class Game extends JFrame {
         panel.requestFocusInWindow();
     }
 
-    private BufferedImage loadImage(String path) {
+    /** Loads an image relative to the working directory; fails loudly if it is missing. */
+    static BufferedImage loadImage(String path) {
         try {
             BufferedImage img = ImageIO.read(new File(path));
             if (img == null) {

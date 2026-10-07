@@ -1,42 +1,50 @@
 package outerspace.enemy;
 
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 import outerspace.combat.Bullet;
+import outerspace.combat.BulletPattern;
 import outerspace.player.Player;
 import outerspace.util.Constants;
 
 /**
  * A patrolling shooter. Enters from the top edge, descends to its patrol row,
- * then bounces left↔right and never descends further. Fires an aimed bullet at
- * the player on a cooldown, but only once it has reached its patrol row.
+ * then bounces left↔right and never descends further. Fires an aimed volley at
+ * the player on a cooldown, but only once it has reached its patrol row. Its
+ * stats decide how many bullets fan out per volley.
  */
 public class ShootingEnemy extends Enemy {
+
+    private static final double VOLLEY_SPREAD_DEG = 14;
 
     private final BufferedImage bulletImage;
     private final int patrolY;
     private int direction = 1;
     private long lastShotTime;
 
-    public ShootingEnemy(int x, int patrolY, BufferedImage image, BufferedImage bulletImage) {
-        super(x, 0, image, Constants.ENEMY_DISPLAY_WIDTH);
+    public ShootingEnemy(int x, int patrolY, BufferedImage image, BufferedImage bulletImage, EnemyStats stats) {
+        super(x, 0, image, stats);
         this.bulletImage = bulletImage;
         this.patrolY = patrolY;
         this.y = -displayHeight; // enter from above the top edge
+        // Stagger the first volley so a wave doesn't fire in unison.
+        this.lastShotTime = System.currentTimeMillis() - (long) (Math.random() * stats.getFireIntervalMs() / 2);
     }
 
     @Override
     public void update(Player player) {
+        int speed = stats.getSpeed();
         if (y < patrolY) {
             // Descend into position.
-            y += Constants.SHOOTING_ENEMY_SPEED;
+            y += speed;
             if (y > patrolY) {
                 y = patrolY;
             }
             return;
         }
         // Patrol horizontally, bounce at the screen edges.
-        x += direction * Constants.SHOOTING_ENEMY_SPEED;
+        x += direction * speed;
         if (x < 0) {
             x = 0;
             direction = 1;
@@ -47,26 +55,18 @@ public class ShootingEnemy extends Enemy {
     }
 
     @Override
-    public Bullet fire(Player player, long now) {
+    public void fire(Player player, long now, List<Bullet> out) {
         // Only fire once in position; no shooting while sliding in.
         if (y < patrolY) {
-            return null;
+            return;
         }
-        if (now - lastShotTime < Constants.ENEMY_FIRE_INTERVAL_MS) {
-            return null;
+        if (now - lastShotTime < stats.getFireIntervalMs()) {
+            return;
         }
         lastShotTime = now;
-        int sx = getCenterX();
-        int sy = getBottomY();
-        double ddx = player.getCenterX() - sx;
-        double ddy = player.getCenterY() - sy;
-        double dist = Math.hypot(ddx, ddy);
-        if (dist == 0) {
-            dist = 1;
-        }
-        int vx = (int) Math.round((ddx / dist) * Constants.ENEMY_BULLET_SPEED);
-        int vy = (int) Math.round((ddy / dist) * Constants.ENEMY_BULLET_SPEED);
-        return new Bullet(sx, sy, bulletImage, vx, vy);
+        BulletPattern.aimed(out, bulletImage, getCenterX(), getBottomY(),
+                player.getCenterX(), player.getCenterY(),
+                stats.getShots(), VOLLEY_SPREAD_DEG, stats.getBulletSpeed(), stats.getBulletDamage());
     }
 
     @Override

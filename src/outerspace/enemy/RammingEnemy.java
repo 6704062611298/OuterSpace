@@ -20,8 +20,8 @@ public class RammingEnemy extends Enemy {
 
     private final Entry entry;
 
-    public RammingEnemy(BufferedImage image, Entry entry) {
-        super(0, 0, image, Constants.ENEMY_DISPLAY_WIDTH);
+    public RammingEnemy(BufferedImage image, Entry entry, EnemyStats stats) {
+        super(0, 0, image, stats);
         this.entry = entry;
         switch (entry) {
             case LEFT:
@@ -42,7 +42,7 @@ public class RammingEnemy extends Enemy {
 
     @Override
     public void update(Player player) {
-        int speed = Constants.RAMMING_ENEMY_SPEED;
+        int speed = stats.getSpeed();
         switch (entry) {
             case LEFT:
                 // Swoop in down-right.

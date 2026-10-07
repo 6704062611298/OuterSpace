@@ -52,9 +52,10 @@ public class MainMenu {
     }
 
     /**
-     * @param lastScore score of the previous run, or -1 if no run has been played yet
+     * @param lastRun summary of the previous run (first line is the headline),
+     *                or {@code null} if no run has been played yet
      */
-    public void draw(Graphics2D g2, int lastScore) {
+    public void draw(Graphics2D g2, String lastRun) {
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
@@ -62,13 +63,16 @@ public class MainMenu {
         g2.setFont(new Font("SansSerif", Font.BOLD, 52));
         drawCentered(g2, "OUTERSPACE", Constants.SCREEN_HEIGHT / 4 + 30);
 
-        if (lastScore >= 0) {
-            g2.setColor(Color.RED);
+        if (lastRun != null) {
+            String[] lines = lastRun.split("\n");
+            g2.setColor(lines[0].startsWith("VICTORY") ? Color.WHITE : Color.RED);
             g2.setFont(new Font("SansSerif", Font.BOLD, 28));
-            drawCentered(g2, "GAME OVER", Constants.SCREEN_HEIGHT / 4 + 80);
+            drawCentered(g2, lines[0], Constants.SCREEN_HEIGHT / 4 + 80);
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("SansSerif", Font.PLAIN, 20));
-            drawCentered(g2, "Last Score: " + lastScore, Constants.SCREEN_HEIGHT / 4 + 110);
+            g2.setFont(new Font("SansSerif", Font.PLAIN, 18));
+            for (int i = 1; i < lines.length; i++) {
+                drawCentered(g2, lines[i], Constants.SCREEN_HEIGHT / 4 + 90 + i * 26);
+            }
         }
 
         g2.setFont(new Font("SansSerif", Font.BOLD, 26));

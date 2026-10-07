@@ -6,7 +6,6 @@ import java.util.List;
 
 import outerspace.enemy.Enemy;
 import outerspace.player.Player;
-import outerspace.util.Constants;
 
 /**
  * Pure collision resolution between entities. Has no state of its own and
@@ -19,8 +18,9 @@ public final class CollisionSystem {
     }
 
     /**
-     * Resolves player bullets vs enemies. Returns the score gained from
-     * destroyed enemies. On hit, both the bullet and the enemy are removed.
+     * Resolves player bullets vs enemies. Each hit removes the bullet and
+     * damages the enemy; enemies at 0 HP are removed. Returns the score gained
+     * from destroyed enemies.
      */
     public static int handleBulletEnemy(List<Bullet> bullets, List<Enemy> enemies) {
         int scoreGained = 0;
@@ -35,8 +35,10 @@ public final class CollisionSystem {
                 Enemy enemy = enemyIt.next();
                 if (bulletBounds.intersects(enemy.getBounds())) {
                     bulletIt.remove();
-                    enemyIt.remove();
-                    scoreGained += Constants.SCORE_PER_ENEMY;
+                    if (enemy.takeDamage(bullet.getDamage())) {
+                        enemyIt.remove();
+                        scoreGained += enemy.getScoreValue();
+                    }
                     break;
                 }
             }
@@ -45,26 +47,28 @@ public final class CollisionSystem {
     }
 
     /**
-     * Resolves enemies vs the player. On contact the enemy is destroyed and
-     * the player takes {@link Constants#ENEMY_DAMAGE}.
+     * Resolves enemies vs the player. Ordinary enemies are destroyed on contact;
+     * enemies that survive contact (bosses) hit again only after a cooldown.
      */
-    public static void handleEnemyPlayer(List<Enemy> enemies, Player player) {
+    public static void handleEnemyPlayer(List<Enemy> enemies, Player player, long now) {
         Rectangle playerBounds = player.getBounds();
 
         Iterator<Enemy> enemyIt = enemies.iterator();
         while (enemyIt.hasNext()) {
             Enemy enemy = enemyIt.next();
-            if (playerBounds.intersects(enemy.getBounds())) {
-                player.takeDamage(Constants.ENEMY_DAMAGE);
+            if (!playerBounds.intersects(enemy.getBounds())) {
+                continue;
+            }
+            if (enemy.diesOnContact()) {
+                player.takeDamage(enemy.getContactDamage());
                 enemyIt.remove();
+            } else if (enemy.tryContactHit(now)) {
+                player.takeDamage(enemy.getContactDamage());
             }
         }
     }
 
-    /**
-     * Resolves enemy bullets vs the player. On hit the bullet is removed and
-     * the player takes {@link Constants#ENEMY_BULLET_DAMAGE}.
-     */
+    /** Resolves enemy bullets vs the player. On hit the bullet is removed. */
     public static void handleEnemyBulletPlayer(List<Bullet> enemyBullets, Player player) {
         Rectangle playerBounds = player.getBounds();
 
@@ -72,7 +76,7 @@ public final class CollisionSystem {
         while (it.hasNext()) {
             Bullet bullet = it.next();
             if (playerBounds.intersects(bullet.getBounds())) {
-                player.takeDamage(Constants.ENEMY_BULLET_DAMAGE);
+                player.takeDamage(bullet.getDamage());
                 it.remove();
             }
         }
