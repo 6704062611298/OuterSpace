@@ -49,5 +49,8 @@ public final class Constants {
     public static final String BULLET_IMAGE = ASSET_DIR + "/Bullet.png";
     // public static final String BULLET_IMAGE = ASSET_DIR + "/Bullet.png";
     public static final String BOSS_IMAGE = ASSET_DIR + "/Enemy_1.png";  // placeholder until a boss sprite exists
-    public static final String BACKGROUND_IMAGE = "assets/EarthOrbit.jpg";
+    public static final String MAP_DIR = "Map_assets";
+    public static final String ACT1_BACKGROUND = MAP_DIR + "/Map1.jpg";
+    public static final String ACT2_BACKGROUND = MAP_DIR + "/Map2.jpg";
+    public static final String ACT3_BACKGROUND = MAP_DIR + "/EarthOrbit.jpg";  // placeholder until Map3.jpg exists
 }

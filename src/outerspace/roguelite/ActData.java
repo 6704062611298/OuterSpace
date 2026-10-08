@@ -17,7 +17,7 @@ import outerspace.util.Constants;
 public final class ActData {
 
     public static final List<ActData> ACTS = List.of(
-            new ActData(1, "Outer Orbit", Constants.BACKGROUND_IMAGE,
+            new ActData(1, "Outer Orbit", Constants.ACT1_BACKGROUND,
                     MapConfig.standard(),
                     // hp, contact, bulletDmg, bulletSpd, fireMs, shots, speed, width, score
                     new EnemyStats(1, 25, 10, 4.0, 1500, 1, 2, 55, 100),
@@ -26,7 +26,7 @@ public final class ActData {
                     new EnemyStats(4, 35, 0, 0, 0, 0, 3, 70, 300),
                     4, 3, 6, 600,
                     new BossData("SENTINEL", 120, 10, 30, 3.5, 1, 3000)),
-            new ActData(2, "Ruined Spires", Constants.BACKGROUND_IMAGE,
+            new ActData(2, "Ruined Spires", Constants.ACT2_BACKGROUND,
                     MapConfig.standard().floors(11),
                     new EnemyStats(2, 30, 13, 4.5, 1300, 2, 2, 55, 150),
                     new EnemyStats(2, 30, 0, 0, 0, 0, 3, 55, 150),
@@ -34,7 +34,7 @@ public final class ActData {
                     new EnemyStats(6, 40, 0, 0, 0, 0, 3, 70, 450),
                     5, 4, 7, 520,
                     new BossData("WARDEN", 200, 13, 35, 4.0, 2, 5000)),
-            new ActData(3, "The Core", Constants.BACKGROUND_IMAGE,
+            new ActData(3, "The Core", Constants.ACT3_BACKGROUND,
                     MapConfig.standard().floors(12).nodesPerFloor(2, 5)
                             .weight(NodeType.ELITE, 0.16).count(NodeType.ELITE, 2, 5),
                     new EnemyStats(3, 35, 16, 5.0, 1100, 3, 3, 55, 200),
