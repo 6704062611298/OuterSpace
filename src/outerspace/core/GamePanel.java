@@ -39,7 +39,7 @@ public class GamePanel extends JPanel {
     /** One scrolling background per image path, loaded the first time an act uses it. */
     private final Map<String, ParallaxBackground> backgrounds = new HashMap<>();
     private final Set<Integer> keys = new HashSet<>();
-    private final MainMenu menu = new MainMenu();
+    private final MainMenu menu = new MainMenu(Game.loadImage(Constants.MENU_BACKGROUND));
     private final MapScreen mapScreen = new MapScreen();
     private final ChoiceScreen choiceScreen = new ChoiceScreen();
     private final Hud hud = new Hud();
@@ -207,6 +207,9 @@ public class GamePanel extends JPanel {
     // --- Update ---------------------------------------------------------------
 
     private void tick() {
+        if (run.getState() == GameState.MENU) {
+            menu.update();
+        }
         if (run.getState() == GameState.PLAYING) {
             background().update();
             int dx = 0;
